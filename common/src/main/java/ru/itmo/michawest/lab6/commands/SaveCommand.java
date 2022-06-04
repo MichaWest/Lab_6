@@ -11,4 +11,7 @@ public class SaveCommand extends Command {
     public void getResult() {
         System.out.println("Коллекция успешно сохранена");
     }
+    @Override
+    public void setNameOfCommand(String str){super.nameOfCommand = str;
+    }
 }

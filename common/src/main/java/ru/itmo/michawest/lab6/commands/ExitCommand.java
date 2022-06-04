@@ -1,6 +1,6 @@
 package ru.itmo.michawest.lab6.commands;
 
-public class ExitCommand extends Command{
+public class ExitCommand extends Command {
     protected String nameOfCommand = "exit";
 
     public ExitCommand() {

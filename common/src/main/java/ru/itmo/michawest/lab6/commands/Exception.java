@@ -14,7 +14,7 @@ public class Exception extends Command {
         System.out.println(message);
     }
 
-    public void setMessage(String mes){
+    public void setMessage(String mes) {
         message = mes;
     }
 }

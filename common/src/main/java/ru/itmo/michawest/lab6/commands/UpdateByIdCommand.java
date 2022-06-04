@@ -13,22 +13,22 @@ public class UpdateByIdCommand extends Command {
 
     @Override
     public void getResult() {
-        System.out.println("Эдемент #"+ newId +" обновлен");
+        System.out.println("Эдемент #" + newId + " обновлен");
     }
 
-    public void setNewId(int id){
+    public void setNewId(int id) {
         newId = id;
     }
 
-    public int getNewId(){
+    public int getNewId() {
         return newId;
     }
 
-    public void setUpdatePerson(Person p){
+    public void setUpdatePerson(Person p) {
         per = p;
     }
 
-    public Person getUpdatePerson(){
+    public Person getUpdatePerson() {
         return per;
     }
 }

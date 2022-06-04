@@ -14,7 +14,7 @@ public class ClearCommand extends Command {
         System.out.println("Коллекция очищена");
     }
 
-    public void setCollection(PersonCollection col){
+    public void setCollection(PersonCollection col) {
         this.collection = col;
     }
 }

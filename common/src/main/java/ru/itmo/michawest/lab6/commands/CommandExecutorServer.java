@@ -2,6 +2,7 @@ package ru.itmo.michawest.lab6.commands;
 
 
 import ru.itmo.michawest.lab6.collection.PersonCollection;
+import ru.itmo.michawest.lab6.exceptions.CannotSaveException;
 import ru.itmo.michawest.lab6.exceptions.CommandException;
 import ru.itmo.michawest.lab6.exceptions.EmptyCollectionException;
 import ru.itmo.michawest.lab6.exceptions.InvalidCommandArgumentException;
@@ -15,20 +16,21 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CommandExecutorServer {
 
-    static protected InetSocketAddress address = new InetSocketAddress("localhost", 6027);
+    static protected InetSocketAddress address;
     private InetSocketAddress addressOfSender;
     private PersonCollection collection;
     private DatagramChannel channel;
     private final FileWorker fileWorker;
     private InputAll input;
-    private boolean run;
+    private AtomicBoolean run = new AtomicBoolean();
     private final List<String> history;
 
-    public CommandExecutorServer(FileWorker fileWorker, PersonCollection collection, InputAll inputAll) {
+    public CommandExecutorServer(FileWorker fileWorker, PersonCollection collection, InputAll inputAll, int port) {
+        this.address = new InetSocketAddress("localhost", port);
         this.input = inputAll;
         this.collection = collection;
         this.fileWorker = fileWorker;
@@ -40,22 +42,22 @@ public class CommandExecutorServer {
             try {
                 channel = DatagramChannel.open();
                 channel.bind(address);
-                run = true;
+                run.set(true);
                 InputThread in = new InputThread();
-                new Thread(in,"MyThread").start();
-                while (run) {
+                new Thread(in, "MyThread").start();
+                while (run.get()) {
                     Command command = getCommand();
                     System.out.println(command.getNameOfCommand());
                     runCommand(command);
                 }
                 channel.close();
-            } catch(BindException e) {
+            } catch (BindException e) {
                 channel.close();
                 e.printStackTrace();
                 sendResult(new Exception());
             } catch (ClassNotFoundException e) {
                 channel.close();
-                sendResult(new Exception());
+                //sendResult(new Exception());
                 e.printStackTrace();
             }
         } catch (IOException e) {
@@ -82,8 +84,8 @@ public class CommandExecutorServer {
     }
 
     private void runCommand(Command command) throws IOException {
+        String com = command.getNameOfCommand();
         try {
-            String com = command.getNameOfCommand();
             switch (com) {
                 case ("info"):
                     InfoCommand info = (InfoCommand) command;
@@ -107,7 +109,8 @@ public class CommandExecutorServer {
                 case ("update_by_id"):
                     UpdateByIdCommand updateById = (UpdateByIdCommand) command;
                     if (collection.getCollection().isEmpty()) throw new EmptyCollectionException();
-                    if (!collection.checkId(updateById.getNewId())) throw new InvalidCommandArgumentException("нет такого id");
+                    if (!collection.checkId(updateById.getNewId()))
+                        throw new InvalidCommandArgumentException("нет такого id");
                     collection.updateById(updateById.getNewId(), updateById.getUpdatePerson());
                     updateById.setCollection(collection);
                     sendResult(updateById);
@@ -130,12 +133,22 @@ public class CommandExecutorServer {
                 case ("save"):
                     SaveCommand save = (SaveCommand) command;
                     System.out.println("GET");
-                    if(fileWorker.getPath()==null) throw new CommandException("cannot save collection");
+                    if (fileWorker.getPath() == null) throw new CommandException("cannot save collection");
                     if (collection.getCollection().isEmpty()) throw new EmptyCollectionException();
-                    if(!fileWorker.write(collection.serializeCollection())) throw new CommandException("cannot save collection");
+                    if (!fileWorker.write(collection.serializeCollection()))
+                        throw new CommandException("cannot save collection");
                     save.setCollection(collection);
                     System.out.println("Send");
                     sendResult(save);
+                    break;
+                case ("save1"):
+                    SaveCommand save1 = (SaveCommand) command;
+                    System.out.println("GET");
+                    if (fileWorker.getPath() == null) throw new CannotSaveException("cannot save collection");
+                    if (collection.getCollection().isEmpty()) throw new EmptyCollectionException();
+                    if (!fileWorker.write(collection.serializeCollection()))
+                        throw new CannotSaveException("cannot save collection");
+                    save1.setCollection(collection);
                     break;
                 case ("execute_script"):
                     ExecuteScriptCommand executeScript = (ExecuteScriptCommand) command;
@@ -189,28 +202,41 @@ public class CommandExecutorServer {
                     break;
             }
             history.add(com);
-        }catch(EmptyCollectionException | InvalidCommandArgumentException e) {
+        } catch (InvalidCommandArgumentException e) {
             System.out.println(e.getMessage());
             Exception exception = new Exception();
             exception.setMessage(e.getMessage());
             exception.setCollection(collection);
             sendResult(exception);
-        }catch(CommandException e){
+        } catch (EmptyCollectionException |CannotSaveException e) {
+            System.out.println(e.getMessage());
+        } catch (CommandException e) {
             System.out.println(e.getMessage());
             Exception exception = new Exception();
             exception.setMessage(e.getMessage());
             exception.setCollection(collection);
+            System.out.println(com);
             sendResult(exception);
         }
     }
 
-    public class InputThread implements Runnable{
-        public void run(){
-            while(run) {
+    public class InputThread implements Runnable {
+        public void run() {
+            while (run.get()) {
                 CommandWrapper command = input.readCommand();
-                if(command.getCom().equals("exit")){
-                    run = false;
-                } else{
+                if (command.getCom().equals("exit")) {
+                    run.set(false);
+                    System.out.println("Завершение работы");
+                    System.exit(0);
+                }else if(command.getCom().equals("save")){
+                    try {
+                        SaveCommand command1 = new SaveCommand();
+                        command1.setNameOfCommand("save1");
+                        runCommand(command1);
+                    } catch (IOException e) {
+                        System.out.println("Ошибка доступа к файлу.");
+                    }
+                }else {
                     System.out.println("Для того, чтобы закрыть сервер введите exit");
                 }
             }

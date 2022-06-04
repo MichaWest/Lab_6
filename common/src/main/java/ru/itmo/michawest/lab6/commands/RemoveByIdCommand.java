@@ -10,14 +10,14 @@ public class RemoveByIdCommand extends Command {
 
     @Override
     public void getResult() {
-        System.out.println("Элемент с id "+removeID+" успешно удален");
+        System.out.println("Элемент с id " + removeID + " успешно удален");
     }
 
-    public void setRemoveID(int id){
+    public void setRemoveID(int id) {
         removeID = id;
     }
 
-    public int getRemoveID(){
+    public int getRemoveID() {
         return removeID;
     }
 }

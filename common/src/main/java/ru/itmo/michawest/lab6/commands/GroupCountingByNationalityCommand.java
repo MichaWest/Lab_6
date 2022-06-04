@@ -2,7 +2,6 @@ package ru.itmo.michawest.lab6.commands;
 
 import ru.itmo.michawest.lab6.collection.PersonCollection;
 import ru.itmo.michawest.lab6.data.Country;
-import ru.itmo.michawest.lab6.data.Person;
 
 public class GroupCountingByNationalityCommand extends Command {
     protected String nameOfCommand = "group_counting_by_nationality";
@@ -18,15 +17,15 @@ public class GroupCountingByNationalityCommand extends Command {
 
     }
 
-    public void setGroup(PersonCollection group){
+    public void setGroup(PersonCollection group) {
         this.group = group;
     }
 
-    public void setNationality(Country nation){
+    public void setNationality(Country nation) {
         this.nationality = nation;
     }
 
-    public Country getNationality(){
+    public Country getNationality() {
         return nationality;
     }
 }

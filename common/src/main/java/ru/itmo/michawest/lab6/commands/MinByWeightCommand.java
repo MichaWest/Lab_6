@@ -12,10 +12,10 @@ public class MinByWeightCommand extends Command {
 
     @Override
     public void getResult() {
-        System.out.println("The person with min weight: "+minPerson);
+        System.out.println("The person with min weight: " + minPerson);
     }
 
-    public void setMinPerson(Person p){
+    public void setMinPerson(Person p) {
         minPerson = p;
     }
 

@@ -1,4 +1,5 @@
 package ru.itmo.michawest.lab6.collection;
+
 import ru.itmo.michawest.lab6.data.Color;
 import ru.itmo.michawest.lab6.data.Country;
 import ru.itmo.michawest.lab6.data.Person;
@@ -11,6 +12,7 @@ import java.util.HashSet;
 import java.util.Vector;
 
 public class PersonCollection implements Serializable {
+    private static final long serialVersionUID = 667;
     private final LocalTime createTime;
     private Vector<Person> collection;
     private HashSet<Integer> existId;
@@ -158,51 +160,61 @@ public class PersonCollection implements Serializable {
                 "   локация: (" + man.getLocation().getX() + ";" + man.getLocation().getY() + ";" + man.getLocation().getZ() + ")\n";
     }
 
-    /**Возвращает коллекцию объектов Person с национальностью Country n*/
-    public PersonCollection groupByNationality(Country n){
+    /**
+     * Возвращает коллекцию объектов Person с национальностью Country n
+     */
+    public PersonCollection groupByNationality(Country n) {
         PersonCollection r = new PersonCollection();
-        for(Person p :collection){
-            if(p.getNationality()==n){
+        for (Person p : collection) {
+            if (p.getNationality() == n) {
                 r.add(p);
             }
         }
         return r;
     }
 
-    /**Возвращает количество объектов Person с цветом волос Color c*/
-    public int countByHairColor(Color c){
+    /**
+     * Возвращает количество объектов Person с цветом волос Color c
+     */
+    public int countByHairColor(Color c) {
         int count = 0;
-        for(Person p: collection){
-            if(p.getHairColor()==c){
+        for (Person p : collection) {
+            if (p.getHairColor() == c) {
                 count++;
             }
         }
         return count;
     }
 
-    /**Возвращает объект Person с минимальным весом в коллекции*/
-    public Person minByWeight(){
+    /**
+     * Возвращает объект Person с минимальным весом в коллекции
+     */
+    public Person minByWeight() {
         Long minW;
         Person rp = null;
-        minW=collection.lastElement().getWeight();
-        for(Person p: collection){
-            if(p.getWeight()<=minW){
+        minW = collection.lastElement().getWeight();
+        for (Person p : collection) {
+            if (p.getWeight() <= minW) {
                 minW = p.getWeight();
-                rp =p;
+                rp = p;
             }
         }
         return rp;
     }
 
-    /**Удаляет объект с id равным i. Если этот объект был в коллекции, то он будет удален и будет возвращено true, иначе false*/
-    public boolean removeById(int i){
+    /**
+     * Удаляет объект с id равным i. Если этот объект был в коллекции, то он будет удален и будет возвращено true, иначе false
+     */
+    public boolean removeById(int i) {
         return collection.removeElement(getById(i));
     }
 
-    /**Возвращает объект Person из коллекции по id. Если такого объекта нет возвращает null*/
-    public Person getById(int i){
-        for(Person p: collection){
-            if(p.getId() == i){
+    /**
+     * Возвращает объект Person из коллекции по id. Если такого объекта нет возвращает null
+     */
+    public Person getById(int i) {
+        for (Person p : collection) {
+            if (p.getId() == i) {
                 System.out.println(p.getName());
                 return p;
             }
@@ -210,33 +222,41 @@ public class PersonCollection implements Serializable {
         return null;
     }
 
-    /**Проверяем если ли объект с id i в коллекции. Если есть возвращаем true, иначе false*/
-    public boolean checkId(int i){
+    /**
+     * Проверяем если ли объект с id i в коллекции. Если есть возвращаем true, иначе false
+     */
+    public boolean checkId(int i) {
         return collection.contains(getById(i));
     }
 
-    /**Удаляем элемент который находится на позиции number*/
-    public void remove(int number){
+    /**
+     * Удаляем элемент который находится на позиции number
+     */
+    public void remove(int number) {
         collection.remove(number);
     }
 
-    /**Меняем порядок сортировки элементов в коллекции*/
-    public void reorder(){
+    /**
+     * Меняем порядок сортировки элементов в коллекции
+     */
+    public void reorder() {
         order = !order;
         Vector<Person> rcol = new Vector<>();
-        for(int i= collection.size()-1;i>=0;i--){
+        for (int i = collection.size() - 1; i >= 0; i--) {
             rcol.add(collection.elementAt(i));
         }
         collection = rcol;
     }
 
-    /**Обновляем поля объекта Person с id равным i*/
-    public void updateById(int id, Person newp){
-        for (Person p : collection){
-            if (p.getId() == id){
+    /**
+     * Обновляем поля объекта Person с id равным i
+     */
+    public void updateById(int id, Person newp) {
+        for (Person p : collection) {
+            if (p.getId() == id) {
                 newp.addId(id);
                 collection.set(collection.indexOf(getById(id)), newp);
-                System.out.println("Эдемент #"+ id +" обновлен");
+                System.out.println("Эдемент #" + id + " обновлен");
                 return;
             }
         }

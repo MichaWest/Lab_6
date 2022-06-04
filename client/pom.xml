@@ -34,7 +34,7 @@
                     <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
-                            <mainClass>ru.potatocoder228.itmo.lab6.Client</mainClass>
+                            <mainClass>ru.itmo.michawest.lab6.Client</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public abstract class Command implements Serializable {
+    private static final long serialVersionUID = 666;
     protected String nameOfCommand;
     protected ArrayList<String> history;
     protected PersonCollection collection;
@@ -25,11 +26,10 @@ public abstract class Command implements Serializable {
         return collection;
     }
 
-    public void addCommand(String command){
-        if(history == null){
+    public void addCommand(String command) {
+        if (history == null) {
             history.add(command);
-        }
-        else {
+        } else {
             if (history.size() < 7) {
                 history.add(command);
             } else {
@@ -41,5 +41,8 @@ public abstract class Command implements Serializable {
 
     public void setCollection(PersonCollection collection) {
         this.collection = collection;
+    }
+    public void setNameOfCommand(String str){
+        this.nameOfCommand = str;
     }
 }

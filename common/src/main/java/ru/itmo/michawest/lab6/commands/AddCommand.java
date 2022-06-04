@@ -12,14 +12,14 @@ public class AddCommand extends Command {
 
     @Override
     public void getResult() {
-        System.out.println("Person "+ person.getName()+" добавлен в коллекцию");
+        System.out.println("Person " + person.getName() + " добавлен в коллекцию");
     }
 
-    public Person getPerson(){
+    public Person getPerson() {
         return person;
     }
 
-    public void setPerson(Person p){
+    public void setPerson(Person p) {
         this.person = p;
     }
 

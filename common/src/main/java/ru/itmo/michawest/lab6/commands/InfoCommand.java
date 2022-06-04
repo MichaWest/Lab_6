@@ -2,7 +2,6 @@ package ru.itmo.michawest.lab6.commands;
 
 
 import ru.itmo.michawest.lab6.exceptions.EmptyCollectionException;
-import ru.itmo.michawest.lab6.collection.PersonCollection;
 
 public class InfoCommand extends Command {
     protected String nameOfCommand = "info";

@@ -1,4 +1,5 @@
 package ru.itmo.michawest.lab6.commands;
+
 import ru.itmo.michawest.lab6.collection.PersonCollection;
 import ru.itmo.michawest.lab6.data.Color;
 import ru.itmo.michawest.lab6.data.Country;
@@ -8,16 +9,20 @@ import ru.itmo.michawest.lab6.inputManager.FileInput;
 import ru.itmo.michawest.lab6.inputManager.InputAll;
 
 import java.io.*;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Stack;
 
 public class CommandExecutorClient {
 
     static protected InetAddress addressOfServer;
-    private final static int serverPort = 6027;
+    private static int serverPort;
     private InetSocketAddress addressOfSender = null;
     private DatagramSocket client;
     private PersonCollection collection;
@@ -30,7 +35,8 @@ public class CommandExecutorClient {
     private final String[] commands = {"help", "info", "show", "add", "remove_by_id", "update_by_id", "clear", "save", "execute_script", "exit", "remove_first", "reorder", "history", "group_counting_by_nationality", "count_by_hair_color"};
 
 
-    public CommandExecutorClient(InputAll iManager) {
+    public CommandExecutorClient(InputAll iManager, int port) {
+        serverPort = port;
         this.collection = new PersonCollection();
         this.input = iManager;
         //this.fileWorker = fManager;
@@ -68,7 +74,7 @@ public class CommandExecutorClient {
         currentScriptFileName = path;
         input = new FileInput(path);
         run = true;
-        while(run && input.getScanner().hasNextLine()){
+        while (run && input.getScanner().hasNextLine()) {
             CommandWrapper cmd = input.readCommand();
             runCommand(cmd);
         }
@@ -81,17 +87,19 @@ public class CommandExecutorClient {
                 throw new NoSuchCommandException();
             }
             sendCommand(command);
-            if(!command.getCom().equals("exit")) {
+            if (!command.getCom().equals("exit")) {
                 getResult();
             }
-        }catch(ParameterException e){
+        }catch (ParameterException e) {
             System.out.println(e.getMessage());
-        }catch (CommandException e) {
+        } catch (CommandException e) {
             System.out.println(e.getMessage());
         } catch (RecursiveException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             System.out.println(e.getMessage());
+        }catch(IOException e){
+            consoleExit();
         }
     }
 
@@ -107,17 +115,30 @@ public class CommandExecutorClient {
 
     //Получит результат выполнения команды
     private void getResult() throws IOException, ClassNotFoundException {
-        byte[] bufToRead = new byte[1024 * 1024];
-        DatagramPacket recePacket = new DatagramPacket(bufToRead, bufToRead.length);
-        client.receive(recePacket);
-        ByteArrayInputStream readbuf = new ByteArrayInputStream(bufToRead);
-        ObjectInputStream readOb = new ObjectInputStream(readbuf);
-        Command result = (Command) readOb.readObject();
-        updateData(result);
-        result.getResult();
-        this.collection = result.getCollection();
+            byte[] bufToRead = new byte[1024 * 1024];
+            System.out.println("aboba1, принимаю ответ");
+            DatagramPacket recePacket = new DatagramPacket(bufToRead, bufToRead.length);
+            client.setSoTimeout(1000);
+            client.receive(recePacket);
+            System.out.println("Типо принял");
+            ByteArrayInputStream readbuf = new ByteArrayInputStream(bufToRead);
+            ObjectInputStream readOb = new ObjectInputStream(readbuf);
+            Command result = (Command) readOb.readObject();
+            updateData(result);
+            result.getResult();
+            this.collection = result.getCollection();
     }
 
+    public void consoleExit(){
+        System.out.println("Проблема соединения с сервером. Хотите переподключиться к нему?");
+        Scanner scanner = new Scanner(System.in);
+        if(scanner.nextLine().equals("Да")){
+            consoleMode();
+        }else{
+            System.out.println("Для выхода из приложения введите следующей командой exit.");
+            Thread.currentThread().interrupt();
+        }
+    }
     //Отправляем запрос на команду
     private void sendCommand(CommandWrapper command) throws IOException, ParameterException {
         ByteArrayOutputStream writebuf = new ByteArrayOutputStream(1024 * 1024);
@@ -173,12 +194,12 @@ public class CommandExecutorClient {
             case ("remove_by_id"):
                 RemoveByIdCommand removeById = new RemoveByIdCommand();
                 int id;
-                if(arg==null||arg.isEmpty()){
+                if (arg == null || arg.isEmpty()) {
                     throw new MissedCommandArgumentException();
                 }
-                try{
+                try {
                     id = Integer.parseInt(arg);
-                }catch(NumberFormatException e){
+                } catch (NumberFormatException e) {
                     throw new InvalidCommandArgumentException("id должен быть типа int");
                 }
                 removeById.setRemoveID(id);
@@ -191,12 +212,12 @@ public class CommandExecutorClient {
             case ("update_by_id"):
                 UpdateByIdCommand updateById = new UpdateByIdCommand();
                 int nid;
-                if (arg == null || arg.equals("")){
+                if (arg == null || arg.equals("")) {
                     throw new MissedCommandArgumentException();
                 }
-                try{
+                try {
                     nid = Integer.parseInt(arg);
-                } catch (NumberFormatException e){
+                } catch (NumberFormatException e) {
                     throw new InvalidCommandArgumentException("id должен быть типа int");
                 }
                 writeOb.writeObject(updateById);
@@ -233,7 +254,7 @@ public class CommandExecutorClient {
                     CommandExecutorClient process = new CommandExecutorClient(input, collection, client);
                     process.fileMode(arg);
                     runFiles.pop();
-                } catch(RecursiveException e){
+                } catch (RecursiveException e) {
                     System.out.println(e.getMessage());
                 }
                 writeOb.writeObject(executeScript);
@@ -303,9 +324,9 @@ public class CommandExecutorClient {
         this.collection = result.getCollection();
     }
 
-    public void changeData(Command result){
+    public void changeData(Command result) {
         String com = result.getNameOfCommand();
-        switch(com){
+        switch (com) {
             case ("help"):
                 break;
             case ("history"):
